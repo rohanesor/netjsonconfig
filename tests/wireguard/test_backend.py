@@ -119,6 +119,35 @@ PublicKey = 94a+MnZSdzHCzOy5y2K+0+Xe7lQzaa4v7lEiBZ7elVE=
 """
         self.assertEqual(c.render(), expected)
 
+    def test_peer_ipv6_endpoint(self):
+        config = {
+            "wireguard": [
+                {
+                    "name": "test1",
+                    "private_key": "QFdbnuYr7rrF4eONCAs7FhZwP7BXX/jD/jq2LXCpaXI=",
+                    "port": 40842,
+                    "address": "10.0.0.1/24",
+                    "peers": [
+                        {
+                            "public_key": "94a+MnZSdzHCzOy5y2K+0+Xe7lQzaa4v7lEiBZ7elVE=",
+                            "allowed_ips": "10.0.0.4/32",
+                            "endpoint_host": "2001:db8::1",
+                            "endpoint_port": 4908,
+                        },
+                    ],
+                }
+            ]
+        }
+        native = Wireguard(config).render()
+        self.assertIn("Endpoint = [2001:db8::1]:4908\n", native)
+        with self.subTest("hostnames and IPv4 addresses are not bracketed"):
+            for host in ("192.168.1.35", "vpn.example.com"):
+                config["wireguard"][0]["peers"][0]["endpoint_host"] = host
+                self.assertIn(f"Endpoint = {host}:4908\n", Wireguard(config).render())
+        with self.subTest("parsing returns the address without brackets"):
+            config["wireguard"][0]["peers"][0]["endpoint_host"] = "2001:db8::1"
+            self.assertDictEqual(Wireguard(native=native).config, config)
+
     def test_generate(self):
         c = Wireguard(
             {

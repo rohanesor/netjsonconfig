@@ -100,6 +100,10 @@ class Wireguard(BaseConverter):
                 # IPv6 endpoints are not split on their own colons
                 host, separator, port = endpoint.rpartition(":")
                 if separator:
+                    # the brackets only delimit IPv6 addresses
+                    # in the native format, they are not part of the host
+                    if host.startswith("[") and host.endswith("]"):
+                        host = host[1:-1]
                     peer["endpoint_host"] = host
                     peer["endpoint_port"] = port
                 else:
@@ -116,6 +120,10 @@ class Wireguard(BaseConverter):
             host = peer.pop("endpoint_host", None)
             port = peer.pop("endpoint_port", None)
             if host and port:
+                # IPv6 addresses must be enclosed in square brackets,
+                # otherwise the port cannot be told apart from the address
+                if ":" in host and not host.startswith("["):
+                    host = f"[{host}]"
                 peer["Endpoint"] = f"{host}:{port}"
             peer_list.append(self.sorted_dict(peer))
         return peer_list

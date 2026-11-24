@@ -102,7 +102,7 @@ Endpoint = [2001:db8::1]:4908
 PublicKey = jqHs76yCH0wThMSqogDshqcnR9Ymi3wgmvxRkUyMzgU=
 """
         peer = Wireguard(native=native).config["wireguard"][0]["peers"][0]
-        self.assertEqual(peer["endpoint_host"], "[2001:db8::1]")
+        self.assertEqual(peer["endpoint_host"], "2001:db8::1")
         self.assertEqual(peer["endpoint_port"], 4908)
 
     def test_parse_endpoint_without_port(self):
